@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Dictionary {
 	
-	private static final File dictFile = new File("ENABLEdict");
+	private static final File dictFile = new File("ENABLEDict");
 	private static Trie dictTrie;
 	private static Dictionary dictionary;
 	
