@@ -26,6 +26,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
     private final LettersUtil lu;
     private JPanel contentPane;
     private char LetterChosen=0;
+    private Dictionary dict =  Dictionary.getDictionary();
 
 	/**
 	 * Launch the application.
@@ -119,7 +120,11 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 		else if(b.getChar(row,col)==0) return (dir?row:col)-1;
 		else dfs2(dir?row-1:row,dir?col:col-1,dir,b);
 	}
-}
+
+	String dfs3(int row,int col,boolean dir, Board b) {
+		if(b.getChar(row,col)==0) return "";
+		else return b.getChar(row,col)+dfs3(dir?row-1:row,dir?col:col-1,dir,b);
+	}
 
 	public boolean verify(Board b, Dictionary d,int len) {
 		for(int i=0;i<Board.BOARD_SIZE;i++) {
