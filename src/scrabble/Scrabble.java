@@ -5,6 +5,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 public class Scrabble extends JFrame implements TileListener, BoardTileListener {
 
@@ -12,6 +13,11 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
     public void onTileChosen(char c) {
         LetterChosen = c;
     }
+
+	public void onLocationChosen() {
+		if(LetterChosen==0)return;
+
+	}
 
 	/**
 	 * 
@@ -73,8 +79,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 
 		lu = new LettersUtil();
 		Player P1 = new Player(this,1,lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter());
-		P1.setVisible(true);
-		
+		Player P2 = new Player(this,2,lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter());
 		JButton btnReturnToMain = new JButton("Return to main menu");
 		btnReturnToMain.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -86,6 +91,60 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 		
 		JPanel score = new JPanel();
 		gameScreen.add(score, BorderLayout.NORTH);
+		for(int i=0;!lu.isEmpty();i=i+1&1) {
+			if(i==0) {
+				P1.setVisible(true);
+				//Verify
+				verify(board, dict);
+				P1.setVisible(false);
+			} else {
+				P2.setVisible(true);
+
+				P2.setVisible(false);
+			}
+		}
+	}
+
+	int dfs1(int row, int col, boolean dir, Board b) {
+		if(row >= Board.BOARD_SIZE || col >= Board.BOARD_SIZE) return 0;
+		if(b.isUpdated(row,col)) {
+			return 1+dfs1(dir?row+1:row,dir?col:col+1,dir,b);
+		} else
+			return 0;
+	}
+
+	int dfs2(int row,int col, boolean dir, Board b) {
+		//Find the top
+		if((dir?row:col)==0) return 0;
+		else if(b.getChar(row,col)==0) return (dir?row:col)-1;
+		else dfs2(dir?row-1:row,dir?col:col-1,dir,b);
+	}
+}
+
+	public boolean verify(Board b, Dictionary d,int len) {
+		for(int i=0;i<Board.BOARD_SIZE;i++) {
+			for(int j=0;j<Board.BOARD_SIZE;j++) {
+				if(b.isUpdated(i,j)) {
+					if(dfs1(i,j,false,b)==len) {
+						for(int k=i,top;k<i+len;k++) {
+							top = dfs2(k, j, true, b);
+							if(!d.isWord(dfs3(k,top,true,b))) return false;
+						}
+						int top=dfs2(i,j,false,b);
+						if(!d.isWord(dfs3(top,j,false,b))) return false;
+					} else if(dfs1(i,j,true,b)==len) {
+						for(int k=j,top;k<j+len;k++) {
+							top = dfs2(j, k, false, b);
+							if(!d.isWord(dfs3(top,k,false,b))) return false;
+						}
+						int top=dfs2(i,j,true,b);
+						if(!d.isWord(dfs3(j,top,true,b))) return false;
+					} else {
+						return false;
+					}
+				}
+			}
+		}
 	}
 
 }

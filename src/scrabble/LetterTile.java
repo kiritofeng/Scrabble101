@@ -8,7 +8,8 @@ import java.io.IOException;
 public class LetterTile extends JButton{
 
     private Image img;
-    char character;
+    private char character;
+    private boolean isUsed;
 
     public LetterTile(char c) {
         super();
@@ -19,5 +20,13 @@ public class LetterTile extends JButton{
         } catch (IOException e) {
             setText(String.valueOf(c));
         }
+    }
+
+    public void setUsed(boolean b){
+        isUsed = b;
+    }
+
+    public boolean getUsed() {
+        return isUsed;
     }
 }

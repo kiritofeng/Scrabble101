@@ -1,6 +1,8 @@
 package scrabble;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.*;
 
 public class Board extends JPanel {
@@ -20,17 +22,19 @@ public class Board extends JPanel {
 			{ 0, 3, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0 }, { 0, 0, 3, 0, 0, 0, 1, 0, 1, 0, 0, 0, 3, 0, 0 },
 			{ 1, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 1 }, { 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0 },
 			{ 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0 }, { 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0 },
-			{ 4, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 4 }, { 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0 },
+			{ 4, 0, 0, 1, 0, 0, 0, 50, 0, 0, 0, 1, 0, 0, 4 }, { 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0 },
 			{ 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0 }, { 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0 },
 			{ 1, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 1 }, { 0, 0, 3, 0, 0, 0, 1, 0, 1, 0, 0, 0, 3, 0, 0 },
 			{ 0, 3, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0 }, { 4, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 4 } };
 
 	private char[][] board_letters;
     private BoardTile[][] board_buttons;
+    private boolean[][]isNew;
 
 	Board(char[][] cs) {		
 		board_letters = cs;
         board_buttons = new BoardTile[BOARD_SIZE][BOARD_SIZE];
+        isNew = new boolean[BOARD_SIZE][BOARD_SIZE];
 		for (int row = 0; row < BOARD_SIZE; row++) {
 			for (int col = 0; col < BOARD_SIZE; col++) {
                 board_buttons[row][col] = new BoardTile(MULTIPLIERS[row][col]);
@@ -43,17 +47,29 @@ public class Board extends JPanel {
         setLayout(new GridLayout(BOARD_SIZE, BOARD_SIZE));
 		board_letters = new char[BOARD_SIZE][BOARD_SIZE];
         board_buttons = new BoardTile[BOARD_SIZE][BOARD_SIZE];
+        isNew = new boolean[BOARD_SIZE][BOARD_SIZE];
 		for (int row = 0; row < BOARD_SIZE; row++) {
 			for (int col = 0; col < BOARD_SIZE; col++) {
 				board_letters[row][col] = ' ';
                 board_buttons[row][col] = new BoardTile(MULTIPLIERS[row][col]);
+                board_buttons[row][col].addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+
+                    }
+                });
                 add(board_buttons[row][col]);
 			}
 		}
 	}
 
-	public char get(int row, int col) {
+	public char getChar(int row, int col) {
 		return board_letters[row][col];
 	}
+
+	public boolean isUpdated(int row, int col) {
+	    return isNew[row][col];
+    }
+
 
 }

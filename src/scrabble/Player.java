@@ -1,6 +1,5 @@
 package scrabble;
 
-import com.sun.java.swing.plaf.windows.WindowsInternalFrameTitlePane;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +32,7 @@ public class Player extends JDialog {
 		for (int i = 0; i < letters.length; i++) {
 			rack[i] = letters[i];
             buttonrack[i] = new LetterTile(rack[i]);
-            buttonrack[i].addActionListener(new TileEvent(S, buttonrack[i].character) {
+            buttonrack[i].addActionListener(new TileEvent(S, rack[i]) {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     chooseTile();
@@ -61,8 +60,22 @@ public class Player extends JDialog {
         return score;
     }
 
-    public void replaceUsed() {
-        
+    public int getNumberUsed() {
+	    int used=0;
+	    for(int i=0;i<MAX_LETTERS;i++) {
+	        if(buttonrack[i].getUsed())
+	            used++;
+        }
+        return used;
+    }
+
+    public void replaceUsed(char ... newLetters) {
+        for(int i=0,j=0;i<MAX_LETTERS;i++) {
+            if(buttonrack[i].getUsed()) {
+                rack[i] = newLetters[j++];
+                buttonrack[i] = new LetterTile(rack[i]);
+            }
+        }
     }
 
 }

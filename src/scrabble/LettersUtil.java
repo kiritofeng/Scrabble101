@@ -16,6 +16,10 @@ public class LettersUtil {
         return (char)(i+'A');
     }
 
+    public boolean isEmpty() {
+        return mt.size()==0;
+    }
+
     public void refill() {
          for(int i='A';i<='Z';i++) {
              while(mt.remove(i-'A'));
