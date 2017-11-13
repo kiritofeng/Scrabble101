@@ -17,6 +17,7 @@ public class Player extends JDialog {
 	private char[] rack = new char[MAX_LETTERS];
     private LetterTile[] buttonrack = new LetterTile[MAX_LETTERS];
     private JLabel scorelbl;
+    private JPanel tileframe;
 	private int score=0;
     private int num;
 
@@ -27,14 +28,16 @@ public class Player extends JDialog {
         setTitle("Player "+num);
         scorelbl = new JLabel("Score: 0");
         setLayout(new BorderLayout(0,0));
-        JPanel tileframe = new JPanel();
+        tileframe = new JPanel();
         tileframe.setLayout(new GridLayout(4,2));
 		for (int i = 0; i < letters.length; i++) {
 			rack[i] = letters[i];
             buttonrack[i] = new LetterTile(rack[i]);
+            final LetterTile lt = buttonrack[i];
             buttonrack[i].addActionListener(new TileEvent(S, rack[i], i) {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
+                    lt.setUsed(true);
                     chooseTile();
                 }
 
@@ -122,12 +125,16 @@ public class Player extends JDialog {
     }
 
     public void replaceUsed(char ... newLetters) {
+        tileframe.removeAll();
+        tileframe.setLayout(new GridLayout(4, 2));
         for(int i=0,j=0;i<MAX_LETTERS;i++) {
             if(buttonrack[i].getUsed()) {
                 rack[i] = newLetters[j++];
                 buttonrack[i] = new LetterTile(rack[i]);
             }
+            tileframe.add(buttonrack[i]);
         }
+        tileframe.repaint();
     }
 
     public void resetUsed() {

@@ -102,6 +102,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener,
 	 * Create the frame.
 	 */
 	public Scrabble() {
+		setTitle("Scrabble");
         TilesChosen = new HashSet<>();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, 980, 980);
