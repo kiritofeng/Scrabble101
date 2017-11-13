@@ -14,6 +14,7 @@ public class LetterTile extends JButton{
     public LetterTile(char c) {
         super();
         character = c;
+        isUsed = false;
         try {
             img = ImageIO.read(getClass().getResource(c+".png"));
             setIcon(new ImageIcon(img));

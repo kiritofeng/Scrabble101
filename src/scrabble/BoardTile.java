@@ -9,22 +9,29 @@ import javax.swing.*;
 public class BoardTile extends JButton {
     private Image icon;
     private boolean finalized;
-    protected String text;
+    protected String displaytext;
     private static final Color[]cols = {Color.white, new Color(174,220,236), new Color(2,93,229), new Color(254,176,204), new Color(242,66,104), new Color(253,175,201)};
     private static final String[]txt= {"", "2L", "3L", "2W", "3W", "★"};
     public BoardTile(int type) {
         super(txt[type>=txt.length?txt.length-1:type]);
+        displaytext=txt[type>=txt.length?txt.length-1:type];
         setBackground(cols[type>=txt.length?txt.length-1:type]);
     }
 
     public void setLetter(char c) {
-        text=String.valueOf(c);
         try {
+            setText("");
             icon = ImageIO.read(getClass().getResource(c+".png"));
             setIcon(new ImageIcon(icon));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void reset() {
+        setIcon(null);
+        setText(displaytext);
+        repaint();
     }
 
     public void finalize() {
@@ -33,7 +40,7 @@ public class BoardTile extends JButton {
 }
 
 interface BoardTileListener {
-    void onLocationChosen();
+    void onLocationChosen(int row, int col);
 }
 
 abstract class BoardEvent {
@@ -46,6 +53,4 @@ abstract class BoardEvent {
     public void addListener(BoardTileListener btl) {
         listeners.add(btl);
     }
-
-    public abstract void idef();
 }

@@ -3,6 +3,7 @@ package scrabble;
 public class LettersUtil {
 
     private MisofTree mt;
+    private static final int[]values = {1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10};
     public LettersUtil() {
         //Let each letter have 10
         mt = new MisofTree(26);
@@ -26,5 +27,9 @@ public class LettersUtil {
              for(int j=0;j<10;j++)
                  mt.add(i-'A');
         }
+    }
+
+    public static int getValue(char c) {
+        return values[c-'A'];
     }
 }

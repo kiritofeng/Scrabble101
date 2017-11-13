@@ -5,19 +5,69 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.util.HashSet;
 
-public class Scrabble extends JFrame implements TileListener, BoardTileListener {
+public class Scrabble extends JFrame implements TileListener, BoardTileListener, TurnListener, TileResetListener, TileRedrawListener {
 
     @Override
-    public void onTileChosen(char c) {
-        LetterChosen = c;
+    public void onTileChosen(char c, int i) {
+        if(!TilesChosen.contains(i)) {
+            LetterChosen = c;
+            TilesChosen.add(i);
+        }
     }
 
-	public void onLocationChosen() {
+    @Override
+	public void onLocationChosen(int row, int col) {
 		if(LetterChosen==0)return;
-
+		board.Update(row, col, LetterChosen);
+		LetterChosen=0;
+		Placed+=1;
 	}
+
+	@Override
+	public void onReset(int player) {
+        board.resetBoard();
+        P[player].resetUsed();
+        TilesChosen.clear();
+        Placed=0;
+    }
+
+    @Override
+	public void onRedraw(int player) {
+        board.resetBoard();
+        char[] c = new char[Player.MAX_LETTERS];
+        for(int i=0;i<Player.MAX_LETTERS;i++)
+            c[i]=lu.getRandomLetter();
+        P[player].resetLetters(c);
+        P[player].setVisible(false);
+        P[player^1].setVisible(true);
+        Placed=0;
+        TilesChosen.clear();
+    }
+
+    @Override
+	public void onTurnComplete(int player) {
+        int delta = verify(board,dict,Placed);
+        System.out.println(delta);
+        if(delta==0) {
+            //They are wrong
+            //Reset _everything_
+            board.resetBoard();
+            P[player].resetUsed();
+        } else {
+            board.setBoard();
+            char[] c = new char[Placed];
+            for(int i=0;i<Placed;i++)
+                c[i]=lu.getRandomLetter();
+            P[player].replaceUsed(c);
+            P[player].setScore(P[player].getScore()+delta);
+            P[player].setVisible(false);
+            P[player^1].setVisible(true);
+        }
+        TilesChosen.clear();
+        Placed=0;
+    }
 
 	/**
 	 * 
@@ -26,7 +76,11 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
     private final LettersUtil lu;
     private JPanel contentPane;
     private char LetterChosen=0;
+    private int Placed=0;
+    private HashSet<Integer>TilesChosen;
     private Dictionary dict =  Dictionary.getDictionary();
+    private Board board;
+    private Player[] P;
 
 	/**
 	 * Launch the application.
@@ -48,6 +102,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 	 * Create the frame.
 	 */
 	public Scrabble() {
+        TilesChosen = new HashSet<>();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, 980, 980);
 		contentPane = new JPanel();
@@ -75,12 +130,13 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 		contentPane.add(gameScreen, "Game Screen");
 		gameScreen.setLayout(new BorderLayout(0, 0));
 		
-		Board board = new Board();
+		board = new Board(this);
 		gameScreen.add(board, BorderLayout.CENTER);
 
 		lu = new LettersUtil();
-		Player P1 = new Player(this,1,lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter());
-		Player P2 = new Player(this,2,lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter());
+		P = new Player[2];
+		P[0] = new Player(this,0,lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter());
+		P[1] = new Player(this,1,lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter(),lu.getRandomLetter());
 		JButton btnReturnToMain = new JButton("Return to main menu");
 		btnReturnToMain.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -92,24 +148,13 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 		
 		JPanel score = new JPanel();
 		gameScreen.add(score, BorderLayout.NORTH);
-		for(int i=0;!lu.isEmpty();i=i+1&1) {
-			if(i==0) {
-				P1.setVisible(true);
-				//Verify
-				verify(board, dict, 0); //Note that 0 is placeholder rn
-				P1.setVisible(false);
-			} else {
-				P2.setVisible(true);
-
-				P2.setVisible(false);
-			}
-		}
+		P[0].setVisible(true);
 	}
 
 	int dfs1(int row, int col, boolean dir, Board b) {
 		if(row >= Board.BOARD_SIZE || col >= Board.BOARD_SIZE) return 0;
-		if(b.isUpdated(row,col)) {
-			return 1+dfs1(dir?row+1:row,dir?col:col+1,dir,b);
+		if(b.getChar(row,col)!=0) {
+			return dfs1(dir?row+1:row,dir?col:col+1,dir,b)+(b.isUpdated(row,col)?1:0);
 		} else
 			return 0;
 	}
@@ -117,40 +162,94 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 	int dfs2(int row,int col, boolean dir, Board b) {
 		//Find the top
 		if((dir?row:col)==0) return 0;
-		else if(b.getChar(row,col)==0) return (dir?row:col)-1;
+		else if(b.getChar(row,col)==0) return (dir?row:col)+1;
 		else return dfs2(dir?row-1:row,dir?col:col-1,dir,b);
 	}
 
-	String dfs3(int row,int col,boolean dir, Board b) {
-		if(b.getChar(row,col)==0) return "";
-		else return b.getChar(row,col)+dfs3(dir?row-1:row,dir?col:col-1,dir,b);
+	Triple<String,Integer, Integer> dfs3(int row,int col,boolean dir, Board b) {
+		if(b.getChar(row,col)==0||(dir?row:col)>=Board.BOARD_SIZE) return new Triple<>("",0,1);
+		else {
+            Triple<String,Integer,Integer>T = dfs3(dir?row+1:row,dir?col:col+1,dir,b);
+		    T.first=b.getChar(row,col)+T.first;
+		    switch (b.MULTIPLIERS[row][col]) {
+                case Board.DOUBLE_LETTER_BONUS:
+                case Board.STAR:
+                    T.second+=2*LettersUtil.getValue(b.getChar(row,col));
+                    break;
+                case Board.TRIPLE_LETTER_BONUS:
+                    T.second+=3*LettersUtil.getValue(b.getChar(row,col));
+                    break;
+                case Board.DOUBLE_WORD_BONUS:
+                    T.third*=2;
+                    break;
+                case Board.TRIPLE_WORD_BONUS:
+                    T.third*=3;
+                    break;
+            }
+            return T;
+        }
 	}
 
-	public boolean verify(Board b, Dictionary d,int len) {
+	public int verify(Board b, Dictionary d,int len) {
 		for(int i=0;i<Board.BOARD_SIZE;i++) {
 			for(int j=0;j<Board.BOARD_SIZE;j++) {
 				if(b.isUpdated(i,j)) {
+				    int res=0;
 					if(dfs1(i,j,false,b)==len) {
-						for(int k=i,top;k<i+len;k++) {
+						for (int k = i, top; k < Board.BOARD_SIZE; k++) {
+							if (!b.isUpdated(k, j)) continue;
 							top = dfs2(k, j, true, b);
-							if(!d.isWord(dfs3(k,top,true,b))) return false;
+							Triple<String, Integer, Integer> t = dfs3(k, top, true, b);
+							if (t.first.length() > 1) {
+								if (!d.isWord(t.first))
+									return 0;
+								res += t.second * t.third;
+							}
 						}
-						int top=dfs2(i,j,false,b);
-						if(!d.isWord(dfs3(top,j,false,b))) return false;
-					} else if(dfs1(i,j,true,b)==len) {
-						for(int k=j,top;k<j+len;k++) {
+						int top = dfs2(i, j, false, b);
+						Triple<String, Integer, Integer> t = dfs3(i, top, false, b);
+						if (t.first.length() > 1) {
+							if (!d.isWord(t.first))
+								return 0;
+							res += t.second * t.third;
+						}
+					}
+					if(dfs1(i,j,true,b)==len) {
+						for(int k=j,top;k<Board.BOARD_SIZE;k++) {
+						    if(!b.isUpdated(i,k)) continue;
 							top = dfs2(j, k, false, b);
-							if(!d.isWord(dfs3(top,k,false,b))) return false;
+							Triple<String,Integer,Integer>t=dfs3(top,k,false,b);
+							if(t.first.length()>1) {
+                                if(!d.isWord(t.first)) return 0;
+                                res+=t.second*t.third;
+                            }
 						}
 						int top=dfs2(i,j,true,b);
-						if(!d.isWord(dfs3(j,top,true,b))) return false;
+						Triple<String,Integer,Integer>t=dfs3(top,j,true,b);
+                        if(t.first.length()>1) {
+                            if(!d.isWord(t.first))
+                                return 0;
+                            res+=t.second*t.third;
+                        }
 					} else {
-						return false;
+						return 0;
 					}
+					return res;
 				}
 			}
 		}
-		return false; //Should never hit this anyways
+		return 0;
 	}
 
+}
+
+class Triple<A,B,C> {
+    A first;
+    B second;
+    C third;
+    public Triple(A a, B b, C c) {
+        first = a;
+        second = b;
+        third = c;
+    }
 }

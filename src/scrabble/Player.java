@@ -20,7 +20,7 @@ public class Player extends JDialog {
 	private int score=0;
     private int num;
 
-	public Player(Scrabble S, int playernum, char... letters) {
+	public Player(final Scrabble S, int playernum, char... letters) {
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         setBounds(0,0,180,380);
         num = playernum;
@@ -32,7 +32,7 @@ public class Player extends JDialog {
 		for (int i = 0; i < letters.length; i++) {
 			rack[i] = letters[i];
             buttonrack[i] = new LetterTile(rack[i]);
-            buttonrack[i].addActionListener(new TileEvent(S, rack[i]) {
+            buttonrack[i].addActionListener(new TileEvent(S, rack[i], i) {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     chooseTile();
@@ -41,19 +41,65 @@ public class Player extends JDialog {
                 @Override
                 public void chooseTile() {
                     for(TileListener tl:listeners) {
-                        tl.onTileChosen(this.c);
+                        tl.onTileChosen(this.c, this.i);
                     }
                 }
             });
             tileframe.add(buttonrack[i]);
 		}
+		JButton submit = new JButton("Submit");
+		submit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                S.onTurnComplete(playernum);
+            }
+        });
+        JButton reset = new JButton("Reset");
+        reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                S.onReset(playernum);
+            }
+        });
+        JButton redraw = new JButton("Redraw");
+        redraw.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                S.onRedraw(playernum);
+                tileframe.removeAll();
+                tileframe.setLayout(new GridLayout(4,2));
+                for(int i=0;i<MAX_LETTERS;i++) {
+                    tileframe.add(buttonrack[i]);
+                    buttonrack[i].addActionListener(new TileEvent(S, rack[i], i) {
+                        @Override
+                        public void actionPerformed(ActionEvent actionEvent) {
+                            chooseTile();
+                        }
+
+                        @Override
+                        public void chooseTile() {
+                            for(TileListener tl:listeners) {
+                                tl.onTileChosen(this.c, this.i);
+                            }
+                        }
+                    });
+                }
+            }
+        });
         add(scorelbl, BorderLayout.NORTH);
         add(tileframe, BorderLayout.CENTER);
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new GridLayout(1,2));
+        buttons.add(submit);
+        buttons.add(redraw);
+        buttons.add(reset);
+        add(buttons,BorderLayout.SOUTH);
 	}
 
     public void setScore(int i) {
         score = i;
         scorelbl.setText("Score: " + score);
+        scorelbl.repaint();
     }
 
     public int getScore() {
@@ -69,6 +115,12 @@ public class Player extends JDialog {
         return used;
     }
 
+    public void resetLetters(char ... newLetters) {
+        for(int i=0;i<MAX_LETTERS;i++)
+            buttonrack[i].setUsed(true);
+        replaceUsed(newLetters);
+    }
+
     public void replaceUsed(char ... newLetters) {
         for(int i=0,j=0;i<MAX_LETTERS;i++) {
             if(buttonrack[i].getUsed()) {
@@ -78,19 +130,26 @@ public class Player extends JDialog {
         }
     }
 
+    public void resetUsed() {
+	    for(LetterTile lt:buttonrack)
+	        lt.setUsed(false);
+    }
+
 }
 
 interface TileListener {
-    void onTileChosen(char c);
+    void onTileChosen(char c, int i);
 }
 
 abstract class TileEvent implements ActionListener {
 
     protected java.util.List<TileListener>listeners = new ArrayList<>();
 
-    char c;
-    public TileEvent(Scrabble S, char c) {
+    protected char c;
+    protected int i;
+    public TileEvent(Scrabble S, char c, int i) {
         this.c=c;
+        this.i=i;
         addListener(S);
     }
 
@@ -101,3 +160,14 @@ abstract class TileEvent implements ActionListener {
     public abstract void chooseTile();
 }
 
+interface TurnListener {
+    void onTurnComplete(int i);
+}
+
+interface TileResetListener {
+    void onReset(int i);
+}
+
+interface TileRedrawListener {
+    void onRedraw(int i);
+}

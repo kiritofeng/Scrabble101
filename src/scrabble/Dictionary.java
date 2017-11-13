@@ -5,8 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Dictionary {
-	
-	private static final File dictFile = new File("ENABLEDict");
+
 	private static Trie dictTrie;
 	private static Dictionary dictionary;
 	
@@ -24,15 +23,11 @@ public class Dictionary {
 	private static void InitDictionary() {	
 		dictTrie = new Trie();		
 		Scanner sc;
-		try {
-			sc = new Scanner(dictFile);
-			while (sc.hasNextLine()) {
-				dictTrie.insert(sc.nextLine());
-			}
-			sc.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		sc = new Scanner(Dictionary.class.getResourceAsStream("ENABLEDict"));
+		while (sc.hasNextLine()) {
+			dictTrie.insert(sc.nextLine());
 		}
+		sc.close();
 	}
 	
 	public boolean isWord(String word) {
