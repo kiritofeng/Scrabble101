@@ -96,7 +96,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 			if(i==0) {
 				P1.setVisible(true);
 				//Verify
-				verify(board, dict);
+				verify(board, dict, 0); //Note that 0 is placeholder rn
 				P1.setVisible(false);
 			} else {
 				P2.setVisible(true);
