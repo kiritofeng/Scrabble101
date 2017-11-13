@@ -118,7 +118,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 		//Find the top
 		if((dir?row:col)==0) return 0;
 		else if(b.getChar(row,col)==0) return (dir?row:col)-1;
-		else dfs2(dir?row-1:row,dir?col:col-1,dir,b);
+		else return dfs2(dir?row-1:row,dir?col:col-1,dir,b);
 	}
 
 	String dfs3(int row,int col,boolean dir, Board b) {
@@ -150,6 +150,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener 
 				}
 			}
 		}
+		return false; //Should never hit this anyways
 	}
 
 }
