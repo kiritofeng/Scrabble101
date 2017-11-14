@@ -25,6 +25,7 @@ public class LetterTile extends JButton{
 
     public void setUsed(boolean b){
         isUsed = b;
+        setEnabled(b);
     }
 
     public boolean getUsed() {

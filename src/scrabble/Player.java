@@ -1,10 +1,12 @@
 package scrabble;
 
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.*;
 
 public class Player extends JDialog {
@@ -50,21 +52,33 @@ public class Player extends JDialog {
             });
             tileframe.add(buttonrack[i]);
 		}
-		JButton submit = new JButton("Submit");
+		JButton submit = new JButton();
+		try {
+            submit.setIcon(new ImageIcon(ImageIO.read(this.getClass().getResource("submit.png"))));
+        } catch (IOException ioe) {
+        }
 		submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 S.onTurnComplete(playernum);
             }
         });
-        JButton reset = new JButton("Reset");
+        JButton reset = new JButton();
+        try {
+            reset.setIcon(new ImageIcon(ImageIO.read(this.getClass().getResource("undo.png"))));
+        } catch (IOException e) {
+        }
         reset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 S.onReset(playernum);
             }
         });
-        JButton redraw = new JButton("Redraw");
+        JButton redraw = new JButton();
+        try {
+            redraw.setIcon(new ImageIcon(ImageIO.read(this.getClass().getResource("exchange.png"))));
+        } catch (IOException e) {
+        }
         redraw.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {

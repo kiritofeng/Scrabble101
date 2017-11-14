@@ -2,9 +2,11 @@ package scrabble;
 
 import java.awt.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.HashSet;
 
 public class Scrabble extends JFrame implements TileListener, BoardTileListener, TurnListener, TileResetListener, TileRedrawListener {
@@ -75,6 +77,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener,
 	private static final long serialVersionUID = 1L;
     private final LettersUtil lu;
     private JPanel contentPane;
+    private JButton btnPlay;
     private char LetterChosen=0;
     private int Placed=0;
     private HashSet<Integer>TilesChosen;
@@ -114,8 +117,11 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener,
 		JPanel introScreen = new JPanel();
 		contentPane.add(introScreen, "Intro Screen");
 		introScreen.setLayout(new BorderLayout(0, 0));
-		
-		JButton btnPlay = new JButton("Play");
+		try{
+			btnPlay = new JButton(new ImageIcon(ImageIO.read(this.getClass().getResource("play.png"))));
+		}catch(IOException ioe) {
+			btnPlay = new JButton("Play");
+		}
 		btnPlay.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CardLayout cl = (CardLayout) (contentPane.getLayout());
