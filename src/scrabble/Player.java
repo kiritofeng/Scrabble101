@@ -132,13 +132,13 @@ public class Player extends JDialog {
         return used;
     }
 
-    public void resetLetters(char ... newLetters) {
+    public void resetLetters(Scrabble S, char ... newLetters) {
         for(int i=0;i<MAX_LETTERS;i++)
             buttonrack[i].setUsed(true);
-        replaceUsed(newLetters);
+        replaceUsed(S, newLetters);
     }
 
-    public void replaceUsed(char ... newLetters) {
+    public void replaceUsed(Scrabble S, char ... newLetters) {
         tileframe.removeAll();
         tileframe.setLayout(new GridLayout(4, 2));
         for(int i=0,j=0;i<MAX_LETTERS;i++) {
@@ -147,6 +147,19 @@ public class Player extends JDialog {
                 buttonrack[i] = new LetterTile(rack[i]);
             }
             tileframe.add(buttonrack[i]);
+            buttonrack[i].addActionListener(new TileEvent(S, rack[i], i) {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    chooseTile();
+                }
+
+                @Override
+                public void chooseTile() {
+                    for(TileListener tl:listeners) {
+                        tl.onTileChosen(this.c, this.i);
+                    }
+                }
+            });
         }
         tileframe.repaint();
     }

@@ -41,7 +41,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener,
         char[] c = new char[Player.MAX_LETTERS];
         for(int i=0;i<Player.MAX_LETTERS;i++)
             c[i]=lu.getRandomLetter();
-        P[player].resetLetters(c);
+        P[player].resetLetters(this, c);
         P[player].setVisible(false);
         P[player^1].setVisible(true);
         Placed=0;
@@ -62,7 +62,7 @@ public class Scrabble extends JFrame implements TileListener, BoardTileListener,
             char[] c = new char[Placed];
             for(int i=0;i<Placed;i++)
                 c[i]=lu.getRandomLetter();
-            P[player].replaceUsed(c);
+            P[player].replaceUsed(this, c);
             P[player].setScore(P[player].getScore()+delta);
             P[player].setVisible(false);
             P[player^1].setVisible(true);
